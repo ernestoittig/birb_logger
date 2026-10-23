@@ -28,7 +28,7 @@
 bool wifi_ok = false;
 bool conn_ok = true;
 
-static const char *TAG = "birdy";
+static const char *TAG = "birb_logger";
 
 void ui(void) {
     display_text(0, 0, wifi_ok ? "O" : "X", true);
