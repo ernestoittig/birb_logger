@@ -96,12 +96,12 @@ static void mic_task(void *arg)
 
         smoothed = level > smoothed ? level : smoothed * 0.8f + level * 0.2f;
 
-        if (xSemaphoreTake(mic_buf_mutex, 500) == pdTRUE) {
-            s_mic_level = (int)(smoothed + 0.5f);
+        s_mic_level = (int)(smoothed + 0.5f);
+        if (xSemaphoreTake(mic_buf_mutex, 5) == pdTRUE) {
             memcpy((void*)audio_buf, buf_new, sizeof(audio_buf));
             xSemaphoreGive(mic_consume_mutex);
         } else {
-            ESP_LOGI(TAG, "could not acquire lock");
+            // ESP_LOGI(TAG, "could not acquire lock");
         }
     }
 }

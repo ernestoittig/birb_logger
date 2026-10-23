@@ -12,11 +12,11 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
+#include "portmacro.h"
 #include "sdkconfig.h"
 
+#include "send_audio.h"
 #include "audio.h"
-
-#define THRESHOLD 1
 
 static const char *TAG = "send_audio";
 
@@ -33,10 +33,12 @@ void send_audio_task(void *pvParameters) {
     int s;
 
     while(1) {
-        int current_loudness = 2;
+        int current_loudness = audio_mic_level();
 
         if (current_loudness > THRESHOLD) {
             ESP_LOGI(TAG, "Loudness excedida! Conectando a server...");
+            TickType_t comienzo = xTaskGetTickCount();
+            TickType_t ultimo_loud = comienzo;
 
             int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
 
@@ -72,7 +74,6 @@ void send_audio_task(void *pvParameters) {
             ESP_LOGI(TAG, "... connected");
             freeaddrinfo(res);
 
-            int n = 1000;
             bool keep_recording = true;
             while (keep_recording) {
                 // TODO: Continuously read mic data into audio_buffer here
@@ -88,8 +89,15 @@ void send_audio_task(void *pvParameters) {
                     break;
                 }
                 
-                n--;
-                keep_recording = n >= 0;
+                TickType_t elapsed = xTaskGetTickCount() - comienzo;
+                uint32_t elapsed_ms = elapsed * portTICK_PERIOD_MS;
+                current_loudness = audio_mic_level();
+                if (current_loudness > THRESHOLD) {
+                    ultimo_loud = xTaskGetTickCount();
+                }
+                keep_recording = elapsed_ms < MIN_RECORDING_LENGTH
+                    || (elapsed_ms < MAX_RECORDING_LENGTH && current_loudness > THRESHOLD)
+                    || (xTaskGetTickCount() - ultimo_loud) * portTICK_PERIOD_MS < BOUNCE_RECORDING_LENGTH;
             }
 
             if (s != -1) {
@@ -98,10 +106,5 @@ void send_audio_task(void *pvParameters) {
                 close(s);
             }
         }
-        for(int countdown = 10; countdown >= 0; countdown--) {
-            ESP_LOGI(TAG, "%d... ", countdown);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-        }
-        ESP_LOGI(TAG, "Starting again!");
     }
 }
