@@ -5,3 +5,4 @@
 #define THRESHOLD 50
 
 void send_audio_task(void*);
+extern volatile bool is_recording;

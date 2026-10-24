@@ -11,6 +11,7 @@
 #include "thread.h"
 #include "ui.h"
 #include "bird_drawing.h"
+#include "send_audio.h"
 
 static const char *TAG = "ui";
 
@@ -537,5 +538,11 @@ void draw_ui(void) {
         case UI_STATE_ALL_SPECIES:
             render_all_species();
             break;
+    }
+
+    if (is_recording) {
+        display_text(0, 0, "M", false);
+    } else {
+        display_text(0, 0, "0", false);
     }
 }

@@ -1,4 +1,5 @@
 #include <string.h>
+#include "display.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -22,6 +23,8 @@ static const char *TAG = "send_audio";
 
 #include "server.h"
 
+volatile bool is_recording = false;
+
 void send_audio_task(void *pvParameters) {
     const struct addrinfo hints = {
         .ai_family = AF_INET,
@@ -32,10 +35,12 @@ void send_audio_task(void *pvParameters) {
     int s;
 
     while(1) {
+        is_recording = false;
         int current_loudness = audio_mic_level();
 
         if (current_loudness > THRESHOLD) {
             ESP_LOGI(TAG, "Loudness excedida! Conectando a server...");
+            is_recording = true;
             TickType_t comienzo = xTaskGetTickCount();
             TickType_t ultimo_loud = comienzo;
 
@@ -94,9 +99,10 @@ void send_audio_task(void *pvParameters) {
                 if (current_loudness > THRESHOLD) {
                     ultimo_loud = xTaskGetTickCount();
                 }
-                keep_recording = elapsed_ms < MIN_RECORDING_LENGTH
-                    || (elapsed_ms < MAX_RECORDING_LENGTH && current_loudness > THRESHOLD)
-                    || (xTaskGetTickCount() - ultimo_loud) * portTICK_PERIOD_MS < BOUNCE_RECORDING_LENGTH;
+                keep_recording = elapsed_ms < MAX_RECORDING_LENGTH &&
+                    (elapsed_ms < MIN_RECORDING_LENGTH
+                    || current_loudness > THRESHOLD
+                    || (xTaskGetTickCount() - ultimo_loud) * portTICK_PERIOD_MS < BOUNCE_RECORDING_LENGTH);
             }
 
             if (s != -1) {
