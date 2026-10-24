@@ -29,11 +29,9 @@
 static const char *TAG = "audio";
 
 int16_t audio_buf[MIC_CHUNK_FRAMES * 2];
-static int16_t buf_new[MIC_CHUNK_FRAMES * 2];
 SemaphoreHandle_t mic_buf_mutex;
 SemaphoreHandle_t mic_consume_mutex;
 
-static i2s_chan_handle_t s_tx;
 static i2s_chan_handle_t s_rx;
 
 static volatile int s_mic_level;

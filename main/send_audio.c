@@ -20,8 +20,7 @@
 
 static const char *TAG = "send_audio";
 
-#define WEB_SERVER "10.142.13.19"
-#define WEB_PORT "80"
+#include "server.h"
 
 void send_audio_task(void *pvParameters) {
     const struct addrinfo hints = {
@@ -40,7 +39,7 @@ void send_audio_task(void *pvParameters) {
             TickType_t comienzo = xTaskGetTickCount();
             TickType_t ultimo_loud = comienzo;
 
-            int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
+            int err = getaddrinfo(WEB_SERVER, WEB_SEND_PORT, &hints, &res);
 
             if(err != 0 || res == NULL) {
                 ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);

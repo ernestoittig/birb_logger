@@ -17,3 +17,6 @@ void display_draw_rect(int x, int y, int w, int h);
 void display_text(int x, int y, const char *str, bool invert);
 
 esp_err_t display_flush(void);
+
+#define WIDTH 128
+#define HEIGHT 64

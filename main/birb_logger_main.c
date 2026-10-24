@@ -24,16 +24,13 @@
 #include "wifi.h"
 #include "send_audio.h"
 #include "audio.h"
+#include "ui.h"
+#include "buttons.h"
 
 bool wifi_ok = false;
 bool conn_ok = true;
 
 static const char *TAG = "birb_logger";
-
-void ui(void) {
-    display_text(0, 0, wifi_ok ? "O" : "X", true);
-    display_flush();
-}
 
 void app_main(void)
 {
@@ -68,20 +65,18 @@ void app_main(void)
 
     bool display_ok = display_init() == ESP_OK;
 
-    if (display_ok) {
-        ui();
-    }
-
     wifi_ok = wifi_init();
 
     bool audio_ok = audio_init() == ESP_OK;
     xTaskCreate(&send_audio_task, "send_audio_task", 4096, NULL, 5, NULL);
 
+    ESP_ERROR_CHECK(buttons_init());
+
     int log_div = 0;
     for (;;) {
         int mic_level = audio_ok ? audio_mic_level() : 0;
         if (display_ok) {
-            ui();
+            draw_ui();
         }
         if (audio_ok && ++log_div >= 1000 / 50) {
             log_div = 0;

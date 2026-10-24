@@ -1,1 +1,5 @@
 build
+
+audios
+audios_pre
+*.sqlite3

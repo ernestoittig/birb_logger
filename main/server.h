@@ -1,0 +1,2 @@
+#define WEB_SERVER "10.142.13.19"
+#define WEB_SEND_PORT "5000"
