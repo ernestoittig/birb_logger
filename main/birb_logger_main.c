@@ -63,6 +63,7 @@ void app_main(void)
 
     fflush(stdout);
 
+    ESP_ERROR_CHECK(buttons_init());
     bool display_ok = display_init() == ESP_OK;
 
     wifi_ok = wifi_init();
@@ -70,7 +71,6 @@ void app_main(void)
     bool audio_ok = audio_init() == ESP_OK;
     xTaskCreate(&send_audio_task, "send_audio_task", 4096, NULL, 5, NULL);
 
-    ESP_ERROR_CHECK(buttons_init());
 
     int log_div = 0;
     for (;;) {

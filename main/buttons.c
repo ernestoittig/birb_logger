@@ -153,16 +153,10 @@ const char *buttons_name(button_id_t id)
 
 
 static int last_button_time = -1;
-static QueueHandle_t events;
-static bool events_init = 0;
 #define UI_PERIOD_MS 50
 // returns false if the queue was empty
 bool unqueue_button_event(button_event_t *ev) {
-    if (!events_init) {
-        events = buttons_event_queue();
-        events_init = true;
-    }
-    if (xQueueReceive(events, &ev, pdMS_TO_TICKS(UI_PERIOD_MS)) == pdTRUE) {
+    if (xQueueReceive(s_event_queue, ev, pdMS_TO_TICKS(UI_PERIOD_MS)) == pdTRUE) {
         last_button_time = xTaskGetTickCount();
         return true;
     } else {

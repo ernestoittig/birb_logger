@@ -811,11 +811,12 @@ typedef struct{
     const uint8_t* dibujo;
 } Pajaro;
 const Pajaro PAJAROS_CONOCIDOS[] = {
-    {"Pidgeon", PALOMA},
-    {"Thrush", ZORZAL},
-    {"Hornero", HORNERO},
-    {"Benteveo", BENTEVEO},
-    {"Cotorra", COTORRA},
+    {"Patagioenas picazuro", PALOMA},
+    {"Columbina picui", PALOMA},
+    {"Catharus fuscescens", ZORZAL},
+    {"Furnarius rufus", HORNERO},
+    {"Pitangus sulphuratus", BENTEVEO},
+    {"Myiopsitta monachus", COTORRA},
 };
 const int cantidad_de_parajos_conocidos = sizeof(PAJAROS_CONOCIDOS)/sizeof(PAJAROS_CONOCIDOS[0]);
 

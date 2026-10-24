@@ -42,7 +42,7 @@ int make_http_get_request(const char *path, void *result)
     };
     struct addrinfo *res;
     struct in_addr *addr;
-    int s, r;
+    int s, r = 0;
     char recv_buf[1024];
 
     int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
@@ -97,32 +97,35 @@ int make_http_get_request(const char *path, void *result)
     int seq_match = 0; // Tracks progress matching "\r\n\r\n"
     char *body_start = recv_buf;
 
+    int total_read = 0;
+    bzero(recv_buf, sizeof(recv_buf));
     /* Read HTTP response */
     do {
-        bzero(recv_buf, sizeof(recv_buf));
-        r = read(s, recv_buf, sizeof(recv_buf)-1);
-        
-        for(int i = 0; i < r; i++) {
-            if (header_ended) {
-                // Once headers are skipped, print everything else
-                body_start = &recv_buf[i];
-                break;
-            } else {
-                // State machine to detect the \r\n\r\n sequence
-                if (recv_buf[i] == '\r' && (seq_match == 0 || seq_match == 2)) {
-                    seq_match++;
-                } else if (recv_buf[i] == '\n' && (seq_match == 1 || seq_match == 3)) {
-                    seq_match++;
-                    if (seq_match == 4) {
-                        header_ended = 1; // Double CRLF found, headers are done
-                    }
-                } else {
-                    // Sequence broken. If current char is '\r', start over at 1, else 0
-                    seq_match = (recv_buf[i] == '\r') ? 1 : 0;
+        r = read(s, recv_buf + total_read, sizeof(recv_buf)-total_read-1);
+        total_read += r;
+    } while(r > 0);
+
+    for(int i = 0; i < total_read; i++) {
+        if (header_ended) {
+            // Once headers are skipped, print everything else
+            body_start = &recv_buf[i];
+            break;
+        } else {
+            // State machine to detect the \r\n\r\n sequence
+            if (recv_buf[i] == '\r' && (seq_match == 0 || seq_match == 2)) {
+                seq_match++;
+            } else if (recv_buf[i] == '\n' && (seq_match == 1 || seq_match == 3)) {
+                seq_match++;
+                if (seq_match == 4) {
+                    header_ended = 1; // Double CRLF found, headers are done
                 }
+            } else {
+                // Sequence broken. If current char is '\r', start over at 1, else 0
+                seq_match = (recv_buf[i] == '\r') ? 1 : 0;
             }
         }
-    } while(r > 0);
+    }
+    ESP_LOGI(TAG, "body %s", recv_buf);
     strcpy(result, body_start);
 
     ESP_LOGI(TAG, "... done reading from socket. Last read return=%d errno=%d.", r, errno);

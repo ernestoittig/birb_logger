@@ -5,14 +5,23 @@
 
 #include "buttons.h"
 #include "display.h"
+#include "esp_log.h"
 #include "http.h"
 #include "species.h"
 #include "thread.h"
 #include "ui.h"
 #include "bird_drawing.h"
 
+static const char *TAG = "ui";
+
 void draw_sprite_for_species(const char* str) {
-    dibujar_pajaro_dada_respuesta(str);
+    char scientific[128];
+    strncpy(scientific, str, sizeof(scientific));
+    char *_pos = strchr(scientific, '_');
+    if (_pos) {
+        *_pos = '\0';
+    }
+    dibujar_pajaro_dada_respuesta(scientific);
 }
 
 #define ITEMS_PER_PAGE 4
@@ -384,6 +393,7 @@ void draw_ui(void) {
         if (!event.pressed) {
             continue;
         }
+        ESP_LOGI(TAG, "button %s %s", buttons_name(event.id), event.pressed ? "pressed" : "released");
 
         if (current_state == UI_STATE_SCREENSAVER) {
             if (event.id == BTN_KEY1) {
