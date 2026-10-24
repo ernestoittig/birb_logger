@@ -77,6 +77,7 @@ void app_main(void)
         int mic_level = audio_ok ? audio_mic_level() : 0;
         if (display_ok) {
             draw_ui();
+            display_flush();
         }
         if (audio_ok && ++log_div >= 1000 / 50) {
             log_div = 0;
